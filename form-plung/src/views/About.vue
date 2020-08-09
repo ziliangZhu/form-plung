@@ -32,7 +32,7 @@ export default {
         password: "",
       },
       rules: {
-        username: [{ required: true, message: "请输入用户名" }],
+        username: [{ required: true, message: "请您输入用户名" }],
         password: [{ required: true, message: "请输入密码" }],
       },
     };
