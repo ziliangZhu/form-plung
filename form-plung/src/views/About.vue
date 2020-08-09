@@ -33,7 +33,7 @@ export default {
       },
       rules: {
         username: [{ required: true, message: "请您输入用户名" }],
-        password: [{ required: true, message: "请输入密码" }],
+        password: [{ required: true, message: "请您输入密码" }],
       },
     };
   },
