@@ -5,20 +5,44 @@ class KVueRouter {
   constructor (options) {
     this.$options = options
     // 需要创建响应式的current
-    Vue.util.defineReactive(this, 'current', '/')
-    // this.current = '/'
+    // Vue.util.defineReactive(this, 'current', '/')
+    this.current = window.location.hash.slice(1) || '/'
+    Vue.util.defineReactive(this, 'matched', [])
+    // match 方法可以递归遍历路由表或得路由关系数组
+    this.match()
     // 监听URL变化
+
     window.addEventListener('hashchange', this.onHashChange.bind(this))
     window.addEventListener('load', this.onHashChange.bind(this))
 
-    this.routeMap = {}
-    options.routes.forEach(route => {
-      this.routeMap[route.path] = route
-    })
+    // this.routeMap = {}
+    // options.routes.forEach(route => {
+    //   this.routeMap[route.path] = route
+    // })
   }
 
   onHashChange () {
     this.current = window.location.hash.slice(1)
+    this.matched = []
+    this.match()
+  }
+
+  match (route) {
+    const routes = route || this.$options.routes
+    for (const route of routes) {
+      if (route.path === '/' && this.current === '/') {
+        this.matched.push(route)
+        return
+      }
+
+      if (route.path !== '/' && this.current.indexOf(route.path) !== -1) {
+        this.matched.push(route)
+        if (route.children) {
+          this.match(route.children)
+        }
+        return
+      }
+    }
   }
 }
 
@@ -64,8 +88,28 @@ KVueRouter.install = function (_Vue) {
           component = route.component
         }
       }) */
-      const { routeMap, current } = this.$router
-      const component = routeMap[current].component || null
+
+      this.$vnode.data.routerView = true
+      let depth = 0
+      let parent = this.$parent
+      while (parent) {
+        const vnodeData = parent.$vnode && parent.$vnode.data
+        if (vnodeData) {
+          if (vnodeData.routerView) {
+            // 说明当前parent是一个touter-view
+            depth++
+          }
+        }
+        parent = parent.$parent
+      }
+      //   const { routeMap, current } = this.$router
+      //   const component = routeMap[current].component || null
+
+      let component = null
+      const route = this.$router.matched[depth]
+      if (route) {
+        component = route.component
+      }
       return h(component)
     }
   })
